@@ -17,32 +17,13 @@
     </div>
     <h1>AI Tool</h1>
     <p>Transcription:</p>
-    <button id="startButton">Start</button>
-    <button id="stopButton">Stop</button>
+    <form id="controlForm" method="post" action="{% url 'ai' %}">
+        {% csrf_token %}
+        <button type="submit" name="start_thread" id="startButton">Start</button>
+        <button type="submit" name="stop_thread" id="stopButton">Stop</button>
+    </form>
+    
     <div id="transcription"></div>
-
-    <script>
-        const transcriptionDiv = document.getElementById('transcription');
-        const startButton = document.getElementById('startButton');
-        const stopButton = document.getElementById('stopButton');
-        const socket = io.connect('http://' + document.domain + ':' + location.port);
-
-        socket.on('connect', function() {
-            console.log('Connected to the server');
-        });
-
-        socket.on('transcription', function(data) {
-            transcriptionDiv.innerHTML = data;
-        });
-
-        startButton.addEventListener('click', function() {
-            socket.emit('start_transcription');
-        });
-
-        stopButton.addEventListener('click', function() {
-            socket.emit('stop_transcription');
-        });
-    </script>
 </body>
 <footer><p>&copy; 2023 Prsnt AI</p></footer>    
 </html>
