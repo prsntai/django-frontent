@@ -1,5 +1,6 @@
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 import speech_recognition as sr
 import json
 
@@ -9,6 +10,7 @@ def index(request):
 def docs(request):
     return render(request, 'docs.html')
 
+@csrf_exempt
 def transcribe(request):
     data = json.loads(request.body.decode('utf-8'))
     switch_active = data.get('switchActive', False)

@@ -43,22 +43,14 @@
             }
         });
 
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-        }
-
         var intervalId;
         function startTranscribing() {
         intervalId = setInterval(function () {
             // Send a request to the server with the switch status
-            var csrfToken = getCookie('csrftoken');
             fetch('/transcribe', {
                 method: 'POST',  // Use POST method
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify({ switchActive: isChecked }),  // Include switch status in the request body
             })
@@ -73,13 +65,10 @@
 
         function stopTranscribing() {
             clearInterval(intervalId);
-
-            var csrfToken = getCookie('csrftoken');
             fetch('/transcribe', {
                 method: 'POST',  // Use POST method
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify({ switchActive: isChecked }),  // Include switch status in the request body
             })
