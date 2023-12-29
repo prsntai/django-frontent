@@ -1,38 +1,24 @@
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
-from .thread import prsntThread
-
-prsnt_thread = prsntThread()
+import speech_recognition as sr
+import json
 
 def index(request):
-    if prsnt_thread.started:
-        prsnt_thread.stop = True
-        prsnt_thread.join()
-
     return render(request, 'index.html')
 
 def docs(request):
-    if prsnt_thread.started:
-        prsnt_thread.stop = True
-        prsnt_thread.join()
-
     return render(request, 'docs.html')
 
-def ai(request):
-    global prsnt_thread
-    
-    if prsnt_thread.started:
-        prsnt_thread.stop = True
-        prsnt_thread.join()
-    
-    prsnt_thread = prsntThread()
-    if request.method == 'POST':
-        if 'start_thread' in request.POST:
-            if not prsnt_thread.started:
-                prsnt_thread.start()
-        elif 'stop_thread' in request.POST:
-            if prsnt_thread.started:
-                prsnt_thread.stop = True
-                prsnt_thread.join()
+def transcribe(request):
+    data = json.loads(request.body.decode('utf-8'))
+    switch_active = data.get('switchActive', False)
 
+    if switch_active:
+        response_data = {'status': 'success', 'transcription': 'on'}
+    else:
+        response_data = {'status': 'success', 'transcription': 'off'}
+
+    return JsonResponse(response_data)
+
+def ai(request):
     return render(request, 'ai.html')

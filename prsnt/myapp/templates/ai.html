@@ -1,12 +1,12 @@
-{% load static %}
+<!-- {% load static %} -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prsnt AI - Tool</title>
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-    <link rel="stylesheet" href="{% static 'ai.css' %}">
+    <!-- <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="{% static 'ai.css' %}"> -->
 </head>
 <body>
     <div class="nav">
@@ -16,14 +16,237 @@
         <a href="https://github.com/orgs/prsntai/repositories" target="_blank" rel="noopener" class="nav-right">GitHub</a>
     </div>
     <h1>AI Tool</h1>
-    <p>Transcription:</p>
-    <form id="controlForm" method="post" action="{% url 'ai' %}">
-        {% csrf_token %}
-        <button type="submit" name="start_thread" id="startButton">Start</button>
-        <button type="submit" name="stop_thread" id="stopButton">Stop</button>
+    <form id="controlForm">
+        <label class="switch">
+            <input type="checkbox" id="toggleButton">
+            <span class="slider round"></span>
+        </label>
     </form>
-    
-    <div id="transcription"></div>
+    <p id="onOff">Paused</p>
+    <div class="transcription">
+        <p>Transcription:&nbsp;</p>
+        <p id="transcribe"></p>
+    </div>
+
+    <script>
+        var isChecked = false;
+
+        document.getElementById('toggleButton').addEventListener('change', function () {
+            isChecked = this.checked;
+
+            if (isChecked) {
+                document.getElementById('onOff').innerHTML = 'Listening...';
+                startTranscribing();
+            } else {
+                document.getElementById('onOff').innerHTML = 'Paused';
+                stopTranscribing();
+            }
+        });
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        var intervalId;
+        function startTranscribing() {
+        intervalId = setInterval(function () {
+            // Send a request to the server with the switch status
+            var csrfToken = getCookie('csrftoken');
+            fetch('/transcribe', {
+                method: 'POST',  // Use POST method
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ switchActive: isChecked }),  // Include switch status in the request body
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Handle the response data and update the transcribe variable
+                    document.getElementById('transcribe').innerHTML = data.transcription;
+                })
+                .catch(error => console.error('Error:', error));
+            }, 100); // 1000 milliseconds = 1 second
+        }
+
+        function stopTranscribing() {
+            clearInterval(intervalId);
+
+            var csrfToken = getCookie('csrftoken');
+            fetch('/transcribe', {
+                method: 'POST',  // Use POST method
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ switchActive: isChecked }),  // Include switch status in the request body
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Handle the response data and update the transcribe variable
+                    document.getElementById('transcribe').innerHTML = data.transcription;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+    </script>
 </body>
 <footer><p>&copy; 2023 Prsnt AI</p></footer>    
 </html>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        background-color: #f4f4f4;
+        position: relative;
+        min-height: 115vh;
+        font-family: 'Roboto', sans-serif;
+        margin-left: 20px;
+    }
+    
+    h1 {
+        color: #333;
+        margin-top: 80px;
+        margin-bottom: 20px;
+        font-size: 40px;
+        font-weight: 700;
+    }
+    
+    a {
+        color: #007BFF;
+        text-decoration: none;
+    }
+    
+    a:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+    
+    p {
+        color: #555;
+    }
+    
+    li {
+        color: #555;
+    }
+    
+    ul {
+        color: #555;
+    }
+    
+    .nav {
+        display: inline-block;
+        justify-content: space-between;
+        align-items: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding-top: 20px;
+        padding-bottom: 20px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 100;
+    }
+    
+    .nav-element {
+        display: inline-block;
+        margin: 0 10px;
+    }
+    
+    .nav-right {
+        float: right;
+        margin: 0 10px;
+    }
+    
+    .nav-element:hover {
+        border-color: #F5F5F5;
+        background-color: #F5F5F5;
+        text-decoration: none;
+    }
+    
+    .nav-right:hover {
+        border-color: #F5F5F5;
+        background-color: #F5F5F5;
+        text-decoration: none;
+    }
+    
+    footer {
+        text-align: center;
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+    }
+    
+    footer p {
+        margin: 0;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    input:checked + .slider {
+        background-color: green;
+    }
+
+    input:focus + .slider {
+        box-shadow: 0 0 1px green;
+    }
+
+    input:checked + .slider:before {
+        -webkit-transform: translateX(26px);
+        -ms-transform: translateX(26px);
+        transform: translateX(26px);
+    }
+
+    .slider.round {
+        border-radius: 34px;
+    }
+
+    .slider.round:before {
+        border-radius: 50%;
+    }
+
+    .transcription {
+        display: flex;
+        flex-direction: row;
+    }
+</style>
